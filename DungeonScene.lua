@@ -1,5 +1,6 @@
-DungeonScene = class('DungeonScene', sonnet.Scene)
 local Point = sonnet.Point
+
+DungeonScene = class('DungeonScene', sonnet.Scene)
 
 local tilesheet = love.graphics.newImage('tiles.png')
 local tiles = {
@@ -8,61 +9,79 @@ local tiles = {
     wall = love.graphics.newQuad(64, 0, 32, 48, 320, 48),
     floor_shadow = love.graphics.newQuad(96, 0, 32, 48, 320, 48),
     player = love.graphics.newQuad(128, 0, 32, 48, 320, 48),
+    door = love.graphics.newQuad(160, 0, 32, 48, 320, 48),
+    door_open = love.graphics.newQuad(192, 0, 32, 48, 320, 48),
 }
 
-function DungeonScene:initialize(...)
+function DungeonScene:initialize(dungeon)
     sonnet.Scene.initialize(self)
-    self.map = sonnet.Map.new_from_strings{...}
-    self:preprocess_map(self.map)
-    self.walls = self:make_wall_sprite_batch(self.quad_map)
-end
-
-function DungeonScene:preprocess_map(map)
-    self.player = {
-        location = map:find_value('@')[1]
-    }
+    self.dungeon = dungeon
+    self.player = {}
+    self:setRoom(dungeon:currentRoom())
+    self.player.location = dungeon:playerLocation()
     assert(self.player.location)
-    map:at(self.player.location, '.')
-
-    local newmap = sonnet.Map(map.width, map.height)
-    for pt, val in map:each() do
-        if val == '#' then -- wall or wall_front
-
-            if map:at(pt+Point.south) ~= '#' then
-                newmap:at(pt, tiles.wall_front)
-            else
-                newmap:at(pt, tiles.wall)
-            end
-
-        elseif val == '.' then -- floor or floor_shadow
-
-            if map:at(pt+Point.north) == '#' then
-                newmap:at(pt, tiles.floor_shadow)
-            else
-                newmap:at(pt, tiles.floor)
-            end
-
-        end -- else nothing
-    end
-
-    self.quad_map = newmap
 end
 
-function DungeonScene:make_wall_sprite_batch(map)
-    local batch = love.graphics.newSpriteBatch(tilesheet, map.width*map.height, 'dynamic')
-
-    for pt, quad in map:each() do
-        if quad ~= 0 then
-            batch:addq(quad,
-                       pt.x*32, pt.y*48)
-        end
+function DungeonScene:setRoom(room)
+    -- We'll store some quads and things in the room structure itself
+    -- and have the scene init them the first time we see the room
+    if not room.visited then -- Set up some stuff for easy drawing
+        self:setQuads(room)
+        room.visited = true
     end
 
-    return batch
+    self.room = room
+end
+
+--- Set the quads to draw for everything in this room
+function DungeonScene:setQuads(room)
+    for pt, cell in room:each() do
+        -- Terrain quad:
+        if cell.terrain == '#' then -- wall or wall_front
+            local south = room:at(pt+Point.south)
+
+            if south and south.terrain ~= '#' then
+                cell.terrain_quad = tiles.wall_front
+            else
+                cell.terrain_quad = tiles.wall
+            end
+
+        elseif cell.terrain == '.' then -- floor or floor_shadow
+            local north = room:at(pt+Point.north)
+
+            if north and north.terrain == '#' then
+                cell.terrain_quad = tiles.floor_shadow
+            else
+                cell.terrain_quad = tiles.floor
+            end
+        end -- else nothing
+
+        -- Add quads to objects
+        for _, obj in ipairs(cell.objects) do
+            if tiles[obj.type] then -- The most common case; quad is named after the type
+                obj.quad = tiles[obj.type]
+            end
+        end
+
+    end
 end
 
 function DungeonScene:draw()
-    love.graphics.draw(self.walls)
+    for pt, cell in self.room:each() do
+        local x, y = pt.x * 32, pt.y * 48
+
+        if cell.terrain_quad then
+            love.graphics.drawq(tilesheet, cell.terrain_quad, x, y)
+        end
+
+        for _, obj in ipairs(cell.objects) do
+            if obj.quad then
+                love.graphics.drawq(tilesheet, obj.quad, x, y)
+            end
+        end
+
+    end
+
     love.graphics.drawq(tilesheet, tiles.player,
                         self.player.location.x*32,
                         self.player.location.y*48)
@@ -76,5 +95,14 @@ function DungeonScene:keypressed(key)
     end
 
     local pt = Point.from_key(key)
-    if pt then self.player.location = self.player.location + pt end
+    if pt then
+        local target = self.player.location + pt
+        if self:allowMove(target) then
+            self.player.location = target
+        end
+    end
+end
+
+function DungeonScene:allowMove(to)
+    return self.room:inside(to) and self.room:at(to).terrain == '.'
 end
