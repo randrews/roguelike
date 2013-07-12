@@ -99,6 +99,8 @@ function DungeonScene:keypressed(key)
         local target = self.player.location + pt
         if self:allowMove(target) then
             self.player.location = target
+        else
+            sonnet.effects.Dim()
         end
     end
 end
