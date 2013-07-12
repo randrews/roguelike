@@ -94,17 +94,51 @@ function DungeonScene:keypressed(key)
         return
     end
 
-    local pt = Point.from_key(key)
-    if pt then
-        local target = self.player.location + pt
+    local dir = Point.from_key(key)
+    if dir then
+        local target = self.player.location + dir
         if self:allowMove(target) then
             self.player.location = target
+        elseif not self.room:inside(target) then
+            self:changeRooms(dir)
         else
-            sonnet.effects.Dim()
+            local obj = self:getSolid(target)
+            local reaction = false
+            if obj then
+                reaction = self:bump(obj, target, self.player.location)
+            end
+            if not reaction then
+                sonnet.effects.Dim()
+            end
         end
     end
 end
 
 function DungeonScene:allowMove(to)
-    return self.room:inside(to) and self.room:at(to).terrain == '.'
+    local inside = self.room:inside(to)
+    local not_wall = inside and self.room:at(to).terrain == '.'
+    local not_solid = not self:getSolid(to)
+    return inside and not_wall and not_solid
+end
+
+function DungeonScene:getSolid(pt)
+    local cell = self.room:at(pt)
+    if not cell or not cell.objects then return false end
+
+    for _, obj in ipairs(cell.objects) do
+        if obj.solid then return obj end
+    end
+end
+
+function DungeonScene:bump(object, location, player_location)
+    if object.type == 'door' then
+        object.type = 'door_open'
+        object.quad = tiles.door_open
+        object.solid = false
+        return true
+    end
+end
+
+function DungeonScene:changeRooms(dir)
+    
 end

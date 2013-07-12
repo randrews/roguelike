@@ -27,7 +27,7 @@ function Dungeon:newRoom(...)
         local cell = {objects=table()}
         if val == '+' then -- door
             val = '.'
-            cell.objects:insert{ type='door' }
+            cell.objects:insert{ type='door', solid=true }
         elseif val == '@' then -- player
             val = '.'
             player = pt
@@ -46,6 +46,13 @@ end
 
 function Dungeon:currentRoom()
     assert(self.current_room)
+    return self:roomAt(self.current_room)
+end
+
+function Dungeon:changeRoom(dir)
+    assert(self.current_room)
+    local new_room = self:roomAt(self.current_room + dir)
+    assert(new_room)
     return self:roomAt(self.current_room)
 end
 
