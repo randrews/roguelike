@@ -132,13 +132,37 @@ end
 
 function DungeonScene:bump(object, location, player_location)
     if object.type == 'door' then
-        object.type = 'door_open'
-        object.quad = tiles.door_open
-        object.solid = false
+        self:openDoor(object)
         return true
     end
 end
 
+function DungeonScene:openDoor(object)
+    object.type = 'door_open'
+    object.quad = tiles.door_open
+    object.solid = false
+end
+
 function DungeonScene:changeRooms(dir)
+    local old_loc = self.dungeon:currentRoomLocation()
+    local new_room = self.dungeon:setRoom(old_loc + dir)
+    assert(new_room)
     
+    if dir == Point.south then
+        self.player.location.y = 0
+    elseif dir == Point.north then
+        self.player.location.y = self.room.height-1
+    elseif dir == Point.east then
+        self.player.location.x = 0
+    elseif dir == Point.west then
+        self.player.location.x = self.room.width-1
+    end
+
+    self:setRoom(new_room)
+
+    -- Often, the player will be standing on
+    -- a door when she first enters the room. Open it,
+    -- if so.
+    local obj = self:getSolid(self.player.location)
+    if obj and obj.type == 'door' then self:openDoor(obj) end
 end

@@ -3,7 +3,7 @@ local Point = sonnet.Point
 
 function Dungeon:initialize(w,h)
     self.rooms = sonnet.Map(w,h)
-    self.current_room = nil
+    self.current_room = nil -- current room location
     self.player_location = nil
 end
 
@@ -49,13 +49,19 @@ function Dungeon:currentRoom()
     return self:roomAt(self.current_room)
 end
 
-function Dungeon:changeRoom(dir)
-    assert(self.current_room)
-    local new_room = self:roomAt(self.current_room + dir)
-    assert(new_room)
-    return self:roomAt(self.current_room)
+function Dungeon:currentRoomLocation()
+    return self.current_room
 end
 
+function Dungeon:setRoom(location)
+    local new_room = self:roomAt(location)
+    assert(new_room)
+    self.current_room = location
+
+    return self:currentRoom()
+end
+
+-- player start location
 function Dungeon:playerLocation()
     return self.player_location
 end
