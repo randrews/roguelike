@@ -9,3 +9,11 @@ Tiles = {
 }
 
 Tilesheet = love.graphics.newImage('tiles.png')
+
+GameFont = love.graphics.newImageFont('font.png',
+                                      ' abcdefghijklmnopqrstuvwxyz' ..
+                                          'ABCDEFGHIJKLMNOPQRSTUVWXYZ' ..
+                                          '0123456789' ..
+                                          '!@#$%^&*()-=+[]{}:;\'"<>,.?/\\')
+
+love.graphics.setFont(GameFont)
