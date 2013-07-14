@@ -1,4 +1,5 @@
 require('sonnet')
+require('loveframes')
 require('Tiles')
 require('Object')
 require('Door')
