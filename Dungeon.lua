@@ -24,16 +24,16 @@ function Dungeon:newRoom(...)
     local player = nil
 
     for pt, val in map:each() do
-        local cell = {objects=table()}
+        local cell = Cell()
         if val == '+' then -- door
             val = '.'
-            cell.objects:insert{ type='door', solid=true }
+            cell:addObject(Door())
         elseif val == '@' then -- player
             val = '.'
             player = pt
         end
 
-        cell.terrain = val
+        cell:setTerrain(val)
         map:at(pt, cell)
     end
 

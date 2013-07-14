@@ -2,17 +2,6 @@ local Point = sonnet.Point
 
 DungeonScene = class('DungeonScene', sonnet.Scene)
 
-local tilesheet = love.graphics.newImage('tiles.png')
-local tiles = {
-    wall_front = love.graphics.newQuad(0, 0, 32, 48, 320, 48),
-    floor = love.graphics.newQuad(32, 0, 32, 48, 320, 48),
-    wall = love.graphics.newQuad(64, 0, 32, 48, 320, 48),
-    floor_shadow = love.graphics.newQuad(96, 0, 32, 48, 320, 48),
-    player = love.graphics.newQuad(128, 0, 32, 48, 320, 48),
-    door = love.graphics.newQuad(160, 0, 32, 48, 320, 48),
-    door_open = love.graphics.newQuad(192, 0, 32, 48, 320, 48),
-}
-
 function DungeonScene:initialize(dungeon)
     self.frozen = false -- if frozen, ignore kbd input
     sonnet.Scene.initialize(self)
@@ -41,29 +30,21 @@ function DungeonScene:setQuads(room)
         if cell.terrain == '#' then -- wall or wall_front
             local south = room:at(pt+Point.south)
 
-            if south and south.terrain ~= '#' then
-                cell.terrain_quad = tiles.wall_front
+            if not south or south.terrain ~= '#' then
+                cell.terrain_quad = Tiles.wall_front
             else
-                cell.terrain_quad = tiles.wall
+                cell.terrain_quad = Tiles.wall
             end
 
         elseif cell.terrain == '.' then -- floor or floor_shadow
             local north = room:at(pt+Point.north)
 
             if north and north.terrain == '#' then
-                cell.terrain_quad = tiles.floor_shadow
+                cell.terrain_quad = Tiles.floor_shadow
             else
-                cell.terrain_quad = tiles.floor
+                cell.terrain_quad = Tiles.floor
             end
         end -- else nothing
-
-        -- Add quads to objects
-        for _, obj in ipairs(cell.objects) do
-            if tiles[obj.type] then -- The most common case; quad is named after the type
-                obj.quad = tiles[obj.type]
-            end
-        end
-
     end
 end
 
@@ -109,19 +90,19 @@ function DungeonScene:drawRoom(room)
         local x, y = pt.x * 32, pt.y * 48
 
         if cell.terrain_quad then
-            love.graphics.drawq(tilesheet, cell.terrain_quad, x, y)
+            love.graphics.drawq(Tilesheet, cell.terrain_quad, x, y)
         end
 
         for _, obj in ipairs(cell.objects) do
             if obj.quad then
-                love.graphics.drawq(tilesheet, obj.quad, x, y)
+                love.graphics.drawq(Tilesheet, obj.quad, x, y)
             end
         end
 
     end
 
     if room == self.room then -- draw player
-        love.graphics.drawq(tilesheet, tiles.player,
+        love.graphics.drawq(Tilesheet, Tiles.player,
                             self.player.location.x*32,
                             self.player.location.y*48)
     end
@@ -136,52 +117,29 @@ function DungeonScene:keypressed(key)
     if self.frozen then return end
 
     local dir = Point.from_key(key)
+
     if dir then
         local target = self.player.location + dir
-        if self:allowMove(target) then
-            self.player.location = target
-        elseif not self.room:inside(target) then
+        local cell = self.room:at(target)
+
+        if not cell then -- Off the screen, change rooms
             self:changeRooms(dir)
-        else
-            local obj = self:getSolid(target)
-            local reaction = false
-            if obj then
-                reaction = self:bump(obj, target, self.player.location)
-            end
-            if not reaction then
+
+        elseif cell:getSolid() then -- solid object; bump
+            local obj = cell:getSolid()
+            local reaction = obj:bump(self.player.location)
+
+            if not reaction then -- it didn't react to the bump
                 sonnet.effects.Dim()
             end
+
+        elseif cell:canEnter() then -- Move there
+            self.player.location = target
+
+        else -- It's a wall
+            sonnet.effects.Dim()
         end
     end
-end
-
-function DungeonScene:allowMove(to)
-    local inside = self.room:inside(to)
-    local not_wall = inside and self.room:at(to).terrain == '.'
-    local not_solid = not self:getSolid(to)
-    return inside and not_wall and not_solid
-end
-
-function DungeonScene:getSolid(pt)
-    local cell = self.room:at(pt)
-    if not cell or not cell.objects then return false end
-
-    for _, obj in ipairs(cell.objects) do
-        if obj.solid then return obj end
-    end
-end
-
-function DungeonScene:bump(object, location, player_location)
-    if object.type == 'door' then
-        self:openDoor(object)
-        return true
-    end
-end
-
-function DungeonScene:openDoor(object)
-    object.type = 'door_open'
-    object.quad = tiles.door_open
-    object.solid = false
 end
 
 function DungeonScene:changeRooms(dir)
@@ -205,8 +163,9 @@ function DungeonScene:changeRooms(dir)
     -- Often, the player will be standing on
     -- a door when she first enters the room. Open it,
     -- if so.
-    local obj = self:getSolid(self.player.location)
-    if obj and obj.type == 'door' then self:openDoor(obj) end
+    local cell = new_room:at(self.player.location)
+    local obj = cell and cell:getSolid()
+    if obj and instanceOf(Door, obj) then obj:open() end
 
     -- Animate the transition
     -- This has a tween that we'll multiply the direction by,
