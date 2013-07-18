@@ -1,11 +1,13 @@
 require('sonnet')
 require('loveframes')
 require('Tiles')
+require('RogueSkin')
 require('Object')
 require('Door')
 require('Cell')
 require('Dungeon')
 require('DungeonScene')
+require('Sidebar')
 
 love.keyboard.setKeyRepeat( 0.35, 0.1 )
 

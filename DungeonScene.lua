@@ -2,6 +2,8 @@ local Point = sonnet.Point
 
 DungeonScene = class('DungeonScene', sonnet.Scene)
 
+local instance_id = 1
+
 function DungeonScene:initialize(dungeon)
     self.frozen = false -- if frozen, ignore kbd input
     sonnet.Scene.initialize(self)
@@ -10,6 +12,17 @@ function DungeonScene:initialize(dungeon)
     self:setRoom(dungeon:currentRoom())
     self.player.location = dungeon:playerLocation()
     assert(self.player.location)
+    self.state = 'dungeonscene_'..instance_id
+    self.sidebar = Sidebar(self)
+end
+
+function DungeonScene:on_install()
+    loveframes.SetState(self.state)
+end
+DungeonScene.on_resume = DungeonScene.on_install
+
+function DungeonScene:on_pause()
+    loveframes.SetState(nil)
 end
 
 function DungeonScene:setRoom(room)
