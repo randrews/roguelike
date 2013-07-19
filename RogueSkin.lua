@@ -8,7 +8,15 @@ skin.OnRegister = blue.OnRegister
 skin.name = 'Rogue'
 skin.author = 'Ross Andrews'
 skin.version = '1.0'
-skin.directory = 'loveframes/skins/Blue'
+
+function skin:OnRegister()
+	local images = loveframes.util.GetDirectoryContents("skin")
+	self.images = {}
+
+    for k, v in ipairs(images) do
+        self.images[v.name .. "." .. v.extension] = love.graphics.newImage(v.fullpath)
+    end
+end
 
 skin.controls.frame_name_font = GameFont
 skin.controls.button_text_font = GameFont
@@ -20,10 +28,13 @@ skin.controls.multichoicerow_text_font = GameFont
 skin.controls.checkbox_text_font = GameFont
 skin.controls.columnlistheader_text_font = GameFont
 
-local bg = {46, 40, 49, 255}
+local bg = {0x30, 0x30, 0x30, 255}
 skin.controls.panel_body_color = bg
 skin.controls.tabpanel_body_color = bg
 
+skin.controls.button_text_hover_color = {255, 255, 255, 255}
+skin.controls.button_text_nohover_color = {255, 255, 255, 255}
+
 loveframes.skins.Register(skin)
 
-loveframes.config.ACTIVESKIN = 'Orange'
+loveframes.config.ACTIVESKIN = 'Rogue'
