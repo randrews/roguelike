@@ -62,9 +62,9 @@ function DungeonScene:setQuads(room)
 end
 
 function DungeonScene:draw()
-    love.graphics.setColor(50, 60, 50)
-    love.graphics.rectangle('fill', 0, 0, 31*32, 15*48)
-    love.graphics.setColor(255, 255, 255)
+    --love.graphics.setColor(0, 0, 0)
+    --love.graphics.rectangle('fill', 0, 0, 31*32, 15*48)
+    --love.graphics.setColor(255, 255, 255)
 
     if self.scroll then
         local w, h = self.room.width*32, self.room.height*48
