@@ -6,6 +6,7 @@ Tiles = {
     player = love.graphics.newQuad(128, 0, 32, 48, 320, 48),
     door = love.graphics.newQuad(160, 0, 32, 48, 320, 48),
     door_open = love.graphics.newQuad(192, 0, 32, 48, 320, 48),
+    tree = love.graphics.newQuad(224, 0, 32, 48, 320, 48),
 }
 
 Tilesheet = love.graphics.newImage('tiles.png')

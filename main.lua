@@ -2,12 +2,18 @@ require('sonnet')
 require('loveframes')
 require('Tiles')
 require('RogueSkin')
+require('Player')
+-- require('Skill')
 require('Object')
-require('Door')
 require('Cell')
+require('Room')
 require('Dungeon')
 require('DungeonScene')
 require('Sidebar')
+
+objects = {}
+objects.Eventer = require('objects.Eventer')
+objects.Door = require('objects.Door')
 
 love.keyboard.setKeyRepeat( 0.35, 0.1 )
 
@@ -40,7 +46,7 @@ d:addRoom(sonnet.Point(0,1),
           "   ####...##.##......#         ",
           "      #....#.#.......##########",
           "      #.......................+",
-          "      #....................####",
+          "      #...E................####",
           "#######....................#   ",
           "#.....+..................###   ",
           "#.....####################     ",

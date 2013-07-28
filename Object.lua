@@ -1,6 +1,10 @@
 Object = class('Object')
 
 function Object:initialize()
+    self:setup()
+end
+
+function Object:setup()
     self.solid = false
     self.location = nil
     self.quad = nil

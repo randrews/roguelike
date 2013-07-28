@@ -13,7 +13,7 @@ function Cell:getSolid()
 end
 
 function Cell:getObjects()
-    return self.objects()
+    return self.objects
 end
 
 function Cell:addObject(obj)

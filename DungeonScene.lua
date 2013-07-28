@@ -129,6 +129,8 @@ function DungeonScene:keypressed(key)
     if key == 'escape' then
         love.event.quit()
         return
+    elseif key == ' ' then
+        self.room:tickEvent(self.player.location)
     end
 
     if self.frozen then return end
@@ -148,10 +150,22 @@ function DungeonScene:keypressed(key)
 
             if not reaction then -- it didn't react to the bump
                 sonnet.effects.Dim()
+            else -- It did, tick
+                self.room:tickEvent(self.player.location)
             end
 
         elseif cell:canEnter() then -- Move there
+            -- First, leave old cell
+            self.room:leaveEvent(self.player.location, target)
+
+            -- Then move
             self.player.location = target
+
+            -- Enter new cell
+            self.room:enterEvent(self.player.location)
+
+            -- Finally, tick
+            self.room:tickEvent(self.player.location)
 
         else -- It's a wall
             sonnet.effects.Dim()
@@ -163,6 +177,8 @@ function DungeonScene:changeRooms(dir)
     local old_loc = self.dungeon:currentRoomLocation()
     local new_room = self.dungeon:setRoom(old_loc + dir)
     assert(new_room)
+
+    self.room:leaveRoomEvent(self.player.location)
     
     if dir == Point.south then
         self.player.location.y = 0
@@ -177,12 +193,14 @@ function DungeonScene:changeRooms(dir)
     local old_room = self.room
     self:setRoom(new_room)
 
+    self.room:enterRoomEvent(self.player.location)
+
     -- Often, the player will be standing on
     -- a door when she first enters the room. Open it,
     -- if so.
     local cell = new_room:at(self.player.location)
     local obj = cell and cell:getSolid()
-    if obj and instanceOf(Door, obj) then obj:open() end
+    if obj and instanceOf(objects.Door, obj) then obj:open() end
 
     -- Animate the transition
     -- This has a tween that we'll multiply the direction by,

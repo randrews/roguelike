@@ -1,4 +1,4 @@
-Door = class('Door', Object)
+local Door = class('Door', Object)
 
 function Door:initialize()
     Object.initialize(self)
@@ -15,3 +15,5 @@ function Door:open()
     self.solid = false
     self.quad = Tiles.door_open
 end
+
+return Door

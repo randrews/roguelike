@@ -3,7 +3,6 @@ local blue = loveframes.skins.available.Blue
 local skin = {}
 
 skin.controls = loveframes.util.Copy(blue.controls)
-skin.OnRegister = blue.OnRegister
 
 skin.name = 'Rogue'
 skin.author = 'Ross Andrews'

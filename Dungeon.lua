@@ -21,23 +21,27 @@ end
 -- The player point may be nil, if the player isn't in this room
 function Dungeon:newRoom(...)
     local map = sonnet.Map.new_from_strings{...}
+    local room = Room(map.width, map.height)
     local player = nil
 
     for pt, val in map:each() do
         local cell = Cell()
         if val == '+' then -- door
             val = '.'
-            cell:addObject(Door())
+            cell:addObject(objects.Door())
         elseif val == '@' then -- player
             val = '.'
             player = pt
+        elseif val == 'E' then -- eventer
+            val = '.'
+            cell:addObject(objects.Eventer())
         end
 
         cell:setTerrain(val)
-        map:at(pt, cell)
+        room:at(pt, cell)
     end
 
-    return map, player
+    return room, player
 end
 
 function Dungeon:roomAt(pt)
