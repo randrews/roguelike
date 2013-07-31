@@ -7,8 +7,8 @@ function Dungeon:initialize(w,h)
     self.player_location = nil
 end
 
-function Dungeon:addRoom(pt, ...)
-    local map, player = self:newRoom(...)
+function Dungeon:addRoom(pt, rm)
+    local map, player = self:newRoom(rm)
     self.rooms:at(pt, map)
     
     if player then
@@ -19,8 +19,7 @@ end
 
 -- returns a map of {objects, terrain}
 -- The player point may be nil, if the player isn't in this room
-function Dungeon:newRoom(...)
-    local map = sonnet.Map.new_from_strings{...}
+function Dungeon:newRoom(map)
     local room = Room(map.width, map.height)
     local player = nil
 
