@@ -3,7 +3,7 @@ local Door = class('Door', Object)
 function Door:initialize()
     Object.initialize(self)
     self.solid = true
-    self.quad = Tiles.door
+    self.quad = Tiles.house.door
 end
 
 function Door:bump(player_location)
@@ -13,7 +13,7 @@ end
 
 function Door:open()
     self.solid = false
-    self.quad = Tiles.door_open
+    self.quad = Tiles.house.door_open
 end
 
 return Door

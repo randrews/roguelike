@@ -3,17 +3,14 @@ Cell = class('Cell')
 function Cell:initialize(location)
     self.location = location
     self.objects = table()
-    self.terrain = nil -- character, like '#' or '.'
+    self.quad = nil
+    self.solid = false
 end
 
 function Cell:getSolid()
     for _, obj in ipairs(self.objects) do
         if obj.solid then return obj end
     end
-end
-
-function Cell:getObjects()
-    return self.objects
 end
 
 function Cell:addObject(obj)
@@ -24,10 +21,16 @@ function Cell:addObject(obj)
     self.objects:insert(obj)
 end
 
-function Cell:setTerrain(char)
-    self.terrain = char
+function Cell:canEnter()
+    return not(self.solid or self:getSolid())
 end
 
-function Cell:canEnter()
-    return self.terrain == '.'
+function Cell:tryEnter()
+    if self.solid then
+        return false, 'dim'
+    elseif self:getSolid() then
+        return false, 'bump'
+    else
+        return true
+    end
 end

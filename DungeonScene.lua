@@ -4,14 +4,12 @@ DungeonScene = class('DungeonScene', sonnet.Scene)
 
 local instance_id = 1
 
-function DungeonScene:initialize(dungeon)
+function DungeonScene:initialize(start_area, start_location)
     self.frozen = false -- if frozen, ignore kbd input
     sonnet.Scene.initialize(self)
-    self.dungeon = dungeon
-    self.player = {}
-    self:setRoom(dungeon:currentRoom())
-    self.player.location = dungeon:playerLocation()
-    assert(self.player.location)
+    self.area = start_area
+    self.player_location = start_location
+    assert(self.player_location)
     self.state = 'dungeonscene_'..instance_id
     self.sidebar = Sidebar(self)
 end
@@ -25,103 +23,63 @@ function DungeonScene:on_pause()
     loveframes.SetState(nil)
 end
 
-function DungeonScene:setRoom(room)
-    -- We'll store some quads and things in the room structure itself
-    -- and have the scene init them the first time we see the room
-    if not room.visited then -- Set up some stuff for easy drawing
-        self:setQuads(room)
-        room.visited = true
-    end
-
-    self.room = room
-end
-
---- Set the quads to draw for everything in this room
-function DungeonScene:setQuads(room)
-    for pt, cell in room:each() do
-        -- Terrain quad:
-        if cell.terrain == '#' then -- wall or wall_front
-            local south = room:at(pt+Point.south)
-
-            if not south or south.terrain ~= '#' then
-                cell.terrain_quad = Tiles.wall_front
-            else
-                cell.terrain_quad = Tiles.wall
-            end
-
-        elseif cell.terrain == '.' then -- floor or floor_shadow
-            local north = room:at(pt+Point.north)
-
-            if north and north.terrain == '#' then
-                cell.terrain_quad = Tiles.floor_shadow
-            else
-                cell.terrain_quad = Tiles.floor
-            end
-        end -- else nothing
-    end
-end
-
 function DungeonScene:draw()
-    --love.graphics.setColor(0, 0, 0)
-    --love.graphics.rectangle('fill', 0, 0, 31*32, 15*48)
-    --love.graphics.setColor(255, 255, 255)
-
     if self.scroll then
-        local w, h = self.room.width*32, self.room.height*48
-        local v = self.scroll.tween.value
-        local new = nil -- where to draw the new room
-        local old = nil -- where to draw the old room
+        -- local w, h = self.room.width*32, self.room.height*48
+        -- local v = self.scroll.tween.value
+        -- local new = nil -- where to draw the new room
+        -- local old = nil -- where to draw the old room
 
-        if self.scroll.dir == Point.south then
-            new = Point(0, h*v)
-            old = Point(0, h*v-h)
-        elseif self.scroll.dir == Point.north then
-            new = Point(0, h*v*-1)
-            old = Point(0, h*v*-1+h)
-        elseif self.scroll.dir == Point.east then
-            new = Point(w*v, 0)
-            old = Point(w*v-w, 0)
-        elseif self.scroll.dir == Point.west then
-            new = Point(w*v*-1, 0)
-            old = Point(w*v*-1+w, 0)
-        end
+        -- if self.scroll.dir == Point.south then
+        --     new = Point(0, h*v)
+        --     old = Point(0, h*v-h)
+        -- elseif self.scroll.dir == Point.north then
+        --     new = Point(0, h*v*-1)
+        --     old = Point(0, h*v*-1+h)
+        -- elseif self.scroll.dir == Point.east then
+        --     new = Point(w*v, 0)
+        --     old = Point(w*v-w, 0)
+        -- elseif self.scroll.dir == Point.west then
+        --     new = Point(w*v*-1, 0)
+        --     old = Point(w*v*-1+w, 0)
+        -- end
 
-        love.graphics.push()
-        love.graphics.translate(new())
-        self:drawRoom(self.room)
-        love.graphics.pop()
-        love.graphics.push()
-        love.graphics.translate(old())
-        self:drawRoom(self.scroll.old_room)
-        love.graphics.pop()
+        -- love.graphics.push()
+        -- love.graphics.translate(new())
+        -- self:drawRoom(self.room)
+        -- love.graphics.pop()
+        -- love.graphics.push()
+        -- love.graphics.translate(old())
+        -- self:drawRoom(self.scroll.old_room)
+        -- love.graphics.pop()
         
     else
-        self:drawRoom(self.room)
+        self:drawArea(self.area)
     end
 
     self:fps()
 end
 
-function DungeonScene:drawRoom(room)
-    for pt, cell in room:each() do
+function DungeonScene:drawArea(area)
+    for pt, cell in area:each() do
         local x, y = pt.x * 32, pt.y * 48
 
-        if cell.terrain_quad then
-            love.graphics.drawq(Tilesheet, cell.terrain_quad, x, y)
+        if cell.quad then
+            love.graphics.drawq(Tilesheets.house, cell.quad, x, y)
         end
 
-        for _, obj in ipairs(cell.objects) do
+        for _, obj in cell.objects:each() do
             if obj.quad then
-                love.graphics.drawq(Tilesheet, obj.quad, x, y)
+                love.graphics.drawq(Tilesheets.house, obj.quad, x, y)
             end
         end
 
     end
 
-    if room == self.room then -- draw player
-        love.graphics.drawq(Tilesheet, Tiles.player,
-                            self.player.location.x*32,
-                            self.player.location.y*48)
+    if area == self.area then -- draw player
+        love.graphics.drawq(Tilesheets.house, Tiles.house.player1,
+                            self.player_location.x*32,
+                            self.player_location.y*48)
     end
 end
 
@@ -130,7 +88,7 @@ function DungeonScene:keypressed(key)
         love.event.quit()
         return
     elseif key == ' ' then
-        self.room:tickEvent(self.player.location)
+        self.area:tickEvent(self.player.location)
     end
 
     if self.frozen then return end
@@ -138,37 +96,34 @@ function DungeonScene:keypressed(key)
     local dir = Point.from_key(key)
 
     if dir then
-        local target = self.player.location + dir
-        local cell = self.room:at(target)
+        local target = self.player_location + dir
+        local cell = self.area:at(target)
 
         if not cell then -- Off the screen, change rooms
             self:changeRooms(dir)
 
-        elseif cell:getSolid() then -- solid object; bump
-            local obj = cell:getSolid()
-            local reaction = obj:bump(self.player.location)
+        else
+            local can_move, result = cell:tryEnter()
 
-            if not reaction then -- it didn't react to the bump
+            if can_move then
+                self.area:leaveEvent(self.player_location, target)
+                self.player_location = target
+                self.area:enterEvent(self.player_location)
+                self.area:tickEvent(self.player_location)
+
+            elseif result == 'dim' then
                 sonnet.effects.Dim()
-            else -- It did, tick
-                self.room:tickEvent(self.player.location)
+
+            elseif result == 'bump' then
+                local obj = cell:getSolid()
+                local reaction = obj:bump(self.player_location)
+
+                if not reaction then -- it didn't react to the bump
+                    sonnet.effects.Dim()
+                else -- It did, tick
+                    self.area:tickEvent(self.player_location)
+                end
             end
-
-        elseif cell:canEnter() then -- Move there
-            -- First, leave old cell
-            self.room:leaveEvent(self.player.location, target)
-
-            -- Then move
-            self.player.location = target
-
-            -- Enter new cell
-            self.room:enterEvent(self.player.location)
-
-            -- Finally, tick
-            self.room:tickEvent(self.player.location)
-
-        else -- It's a wall
-            sonnet.effects.Dim()
         end
     end
 end
