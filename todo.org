@@ -1,0 +1,38 @@
+* Objects
+** Fire
+*** DONE Art
+*** DONE Class
+*** DONE Animation
+*** Damaging player when they enter
+** Weapon rack
+*** Art
+*** Class
+*** Interaction
+** Pots
+*** DONE Art
+*** Class
+*** Interaction
+** Wardrobe
+*** DONE Art
+*** Class
+*** Interaction
+** Player
+*** DONE Art
+*** Animation
+* Sounds
+** Music
+** Effects
+* Shaders
+* Combat
+** Chi bar
+** Health
+** Moves
+* Mobs
+** Art
+** AI
+* Dialogs
+** Messages
+** Containers
+** Menus
+* Menu screen
+* Intro screen

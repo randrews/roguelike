@@ -14,6 +14,7 @@ objects.Eventer = require('objects.Eventer')
 objects.Decoration = require('objects.Decoration')
 objects.Door = require('objects.Door')
 objects.Fence = require('objects.Fence')
+objects.Fire = require('objects.Fire')
 
 love.keyboard.setKeyRepeat( 0.35, 0.1 )
 math.randomseed(os.time())

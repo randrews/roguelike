@@ -44,3 +44,12 @@ function Cell:draw()
 
     self.objects:method_map('draw', self.location)
 end
+
+-- draws all objects with the "overlay" property, meaning that
+-- they sit on top of mobs. So, this is only called on spaces
+-- that contain mobs.
+function Cell:draw_overlay()
+    for _, o in self.objects:each() do
+        if o.overlay then o:draw(self.location) end
+    end
+end

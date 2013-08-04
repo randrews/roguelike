@@ -57,6 +57,8 @@ function Area.static.load(modname)
             cell:addObject(objects.Decoration(Tiles.house.pot, true))
         elseif obj_type == 'fence' then
             cell:addObject(objects.Fence(Tiles.house.fence, 'south'))
+        elseif obj_type == 'fire1' or obj_type == 'fire2' then
+            cell:addObject(objects.Fire())
         end
 
         -- The player may be here

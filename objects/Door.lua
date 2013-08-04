@@ -3,6 +3,7 @@ local Door = class('Door', Object)
 function Door:initialize()
     Object.initialize(self)
     self.solid = true
+    self.overlay = true
     self.quad = Tiles.house.door
 end
 

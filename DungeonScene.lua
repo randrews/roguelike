@@ -69,6 +69,9 @@ function DungeonScene:drawArea(area)
         love.graphics.drawq(Tilesheets.house, Tiles.house.player1,
                             self.player_location.x*32,
                             self.player_location.y*48)
+
+        local cell = area:at(self.player_location)
+        cell:draw_overlay()
     end
 end
 

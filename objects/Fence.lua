@@ -4,6 +4,7 @@ local Point = sonnet.Point
 function Fence:initialize(quad, side)
     self:setup()
     self.solid = false
+    self.overlay = true
     self.quad = quad
     self.dir = sonnet.Point[side] -- a direction you can't enter / leave by
     assert(self.dir)

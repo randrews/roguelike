@@ -6,6 +6,7 @@ end
 
 function Object:setup()
     self.solid = false
+    self.overlay = false
     self.location = nil
     self.quad = nil
 end
