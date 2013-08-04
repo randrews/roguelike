@@ -17,8 +17,15 @@ end
 --- responded in some way, they return true.
 
 function Object:bump(player_location) return false end
-function Object:enter(player_location) return false end
-function Object:leave(player_location) return false end
-function Object:enter_room(player_location) return false end
-function Object:leave_room(player_location) return false end
+function Object:enter(player_location) return true end
+function Object:leave(player_location) return true end
+function Object:enter_room(player_location) return true end
+function Object:leave_room(player_location) return true end
 function Object:tick(player_location) return false end
+
+function Object:draw(location)
+    if self.quad then
+        local x, y = location.x * 32, location.y * 48
+        love.graphics.drawq(Tilesheets.house, self.quad, x, y)
+    end
+end

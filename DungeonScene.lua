@@ -62,18 +62,7 @@ end
 
 function DungeonScene:drawArea(area)
     for pt, cell in area:each() do
-        local x, y = pt.x * 32, pt.y * 48
-
-        if cell.quad then
-            love.graphics.drawq(Tilesheets.house, cell.quad, x, y)
-        end
-
-        for _, obj in cell.objects:each() do
-            if obj.quad then
-                love.graphics.drawq(Tilesheets.house, obj.quad, x, y)
-            end
-        end
-
+        cell:draw()
     end
 
     if area == self.area then -- draw player
@@ -106,10 +95,14 @@ function DungeonScene:keypressed(key)
             local can_move, result = cell:tryEnter()
 
             if can_move then
-                self.area:leaveEvent(self.player_location, target)
-                self.player_location = target
-                self.area:enterEvent(self.player_location)
-                self.area:tickEvent(self.player_location)
+                local can_leave = self.area:leaveEvent(self.player_location, target)
+                local can_enter = can_leave and self.area:enterEvent(self.player_location, target)
+                if can_enter then
+                    self.player_location = target
+                    self.area:tickEvent(self.player_location)
+                else
+                    sonnet.effects.Dim()
+                end
 
             elseif result == 'dim' then
                 sonnet.effects.Dim()

@@ -34,3 +34,13 @@ function Cell:tryEnter()
         return true
     end
 end
+
+function Cell:draw()
+    local x, y = self.location.x * 32, self.location.y * 48
+
+    if self.quad then
+        love.graphics.drawq(Tilesheets.house, self.quad, x, y)
+    end
+
+    self.objects:method_map('draw', self.location)
+end

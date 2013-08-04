@@ -22,6 +22,16 @@ function Area.static.load(modname)
         cell.quad = Tiles.house[wall_type]
         if wall_type == 'wall_front' or wall_type == 'wall' or wall_type == 'fireplace' then
             cell.solid = true
+        elseif wall_type == 'grass1' or wall_type == 'grass2' then
+            if math.random(2) == 1 then
+                cell.quad = Tiles.house.grass1
+            else
+                cell.quad = Tiles.house.grass2
+            end
+
+            if math.random(10) == 1 then
+                cell:addObject(objects.Decoration(Tiles.house.weed, false))
+            end
         end
 
         -- Create an object if there is one
@@ -45,6 +55,8 @@ function Area.static.load(modname)
             cell:addObject(objects.Decoration(Tiles.house.table, true))
         elseif obj_type == 'pot' then
             cell:addObject(objects.Decoration(Tiles.house.pot, true))
+        elseif obj_type == 'fence' then
+            cell:addObject(objects.Fence(Tiles.house.fence, 'south'))
         end
 
         -- The player may be here
@@ -89,12 +101,24 @@ function Area:tickEvent(player_location)
     end
 end
 
-function Area:enterEvent(player_location)
-    local cell = self:at(player_location)
-    cell.objects:method_map('enter', player_location)
+function Area:enterEvent(player_location, target)
+    local cell = self:at(target)
+    local results = cell.objects:method_map('enter', player_location)
+    return self:checkObjectsAllow(results)
 end
 
 function Area:leaveEvent(player_location, target)
     local cell = self:at(player_location)
-    cell.objects:method_map('leave', target)
+    local results = cell.objects:method_map('leave', target)
+    return self:checkObjectsAllow(results)
+end
+
+function Area:checkObjectsAllow(results)
+    for _, r in results:each() do -- For each response..
+        if not r then -- If any said we can't, then we can't.
+            return r
+        end
+    end
+
+    return true -- Otherwise, we can
 end

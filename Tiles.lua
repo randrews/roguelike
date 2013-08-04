@@ -1,5 +1,5 @@
 local function q(x, y)
-    return love.graphics.newQuad(x*32, y*48, 32, 48, 320, 96)
+    return love.graphics.newQuad(x*32, y*48, 32, 48, 320, 192)
 end
 
 Tiles = {
@@ -26,7 +26,12 @@ Tiles = {
         empty2 = q(7, 1),
 
         table = q(8, 1),
-        chair_l = q(9,1)        
+        chair_l = q(9, 1),
+
+        grass1 = q(0, 2),
+        grass2 = q(1, 2),
+        weed = q(2, 2),
+        fence = q(3, 2),
     }
 }
 
@@ -54,7 +59,12 @@ TileCodes = {
         'empty2',
 
         'table',
-        'chair_l'
+        'chair_l',
+
+        'grass1',
+        'grass2',
+        'weed',
+        'fence'
     }
 }
 
